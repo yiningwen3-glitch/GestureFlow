@@ -1,0 +1,214 @@
+<Window x:Class="GestureFlow.Lab.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="clr-namespace:GestureFlow.UI;assembly=GestureFlow.UI"
+    Icon="/GestureFlow.UI;component/Assets/GestureFlow.ico"
+    Style="{DynamicResource MatteWindow}" Title="GestureFlow Lab" Width="1120" Height="760" MinWidth="890" MinHeight="630"
+    WindowStartupLocation="CenterScreen" UseLayoutRounding="True" PreviewKeyDown="OnPreviewKeyDown" PreviewKeyUp="OnPreviewKeyUp">
+    <Window.Resources>
+        <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/GestureFlow.UI;component/Appearance.xaml"/></ResourceDictionary.MergedDictionaries>
+        <Style TargetType="Button" BasedOn="{StaticResource QuietButton}">
+            <Setter Property="Margin" Value="0,0,8,8" />
+            <Setter Property="Padding" Value="{StaticResource ButtonPadding}" />
+        </Style>
+        <Style x:Key="PanelBorder" TargetType="Border" BasedOn="{StaticResource Section}"/>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid Margin="28">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <DockPanel Margin="0,0,0,14" LastChildFill="True">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button x:Name="StopPlayback" Content="停止播放" Click="StopPlaybackClick" IsEnabled="False" />
+                <ComboBox x:Name="ThemePicker" Width="116" SelectedIndex="0" Margin="0,0,0,8"
+                          SelectionChanged="ThemeChanged" AutomationProperties.Name="外观主题">
+                    <ComboBoxItem Content="浅色" />
+                    <ComboBoxItem Content="深色" />
+                </ComboBox>
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Text="GestureFlow Lab" FontSize="{StaticResource TitleSize}" FontWeight="SemiBold" />
+                <TextBlock Margin="0,4,0,0" Text="按住画布左键模拟侧键。拖向目标方向，松开执行。在中心松开或按 Esc 可取消。" TextWrapping="Wrap" />
+            </StackPanel>
+        </DockPanel>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.15*" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Border Style="{StaticResource PanelBorder}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <DockPanel Margin="0,0,0,12" LastChildFill="True">
+                        <CheckBox x:Name="ShowShortcuts" DockPanel.Dock="Right" IsChecked="True" Content="显示快捷键" />
+                        <TextBlock x:Name="ModeLabel" VerticalAlignment="Center" FontWeight="SemiBold" />
+                    </DockPanel>
+                    <Border Grid.Row="1" CornerRadius="6" ClipToBounds="True"
+                            Background="{DynamicResource ControlFillColorDefaultBrush}"
+                            BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="1">
+                        <ui:GestureSurface x:Name="Surface" Background="Transparent" Focusable="True"
+                                           AutomationProperties.Name="虚拟手势画布">
+                            <ui:RadialWheel x:Name="Wheel" ui:Motion.Entrance="WheelMotion" IsHitTestVisible="False" ShowShortcuts="{Binding IsChecked, ElementName=ShowShortcuts}" />
+                        </ui:GestureSurface>
+                    </Border>
+                    <StackPanel Grid.Row="2" Margin="0,14,0,0" AutomationProperties.LiveSetting="Polite">
+                        <TextBlock x:Name="SelectionText" Text="已选择：—" FontSize="17" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="ShortcutText" Text="模拟快捷键：—" Margin="0,4,0,0" />
+                        <TextBlock x:Name="OutcomeText" Text="等待虚拟输入" Margin="0,5,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+            <TabControl x:Name="Tabs" Grid.Column="2">
+                <TabItem Header="模拟测试">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="14">
+                            <TextBlock Text="方向场景" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10" />
+                            <UniformGrid Columns="3" MaxWidth="360" HorizontalAlignment="Left">
+                                <Button Content="↖ 左上" Tag="NorthWest" Click="DirectionClick" />
+                                <Button Content="↑ 向上" Tag="North" Click="DirectionClick" />
+                                <Button Content="↗ 右上" Tag="NorthEast" Click="DirectionClick" />
+                                <Button Content="← 向左" Tag="West" Click="DirectionClick" />
+                                <TextBlock />
+                                <Button Content="→ 向右" Tag="East" Click="DirectionClick" />
+                                <Button Content="↙ 左下" Tag="SouthWest" Click="DirectionClick" />
+                                <Button Content="↓ 向下" Tag="South" Click="DirectionClick" />
+                                <Button Content="↘ 右下" Tag="SouthEast" Click="DirectionClick" />
+                            </UniformGrid>
+                            <TextBlock Text="输入边界" FontSize="16" FontWeight="SemiBold" Margin="0,14,0,10" />
+                            <WrapPanel>
+                                <Button Content="侧键轻点" Tag="Click" Click="ScenarioClick" />
+                                <Button Content="长按" Tag="LongPress" Click="ScenarioClick" />
+                                <Button Content="无效手势" Tag="Invalid" Click="ScenarioClick" />
+                                <Button Content="取消手势" Tag="Cancel" Click="ScenarioClick" />
+                                <Button Content="快速连续操作" Tag="Rapid" Click="ScenarioClick" />
+                            </WrapPanel>
+                            <Separator Margin="0,10,0,12" />
+                            <TextBlock Text="录制与回放" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10" />
+                            <WrapPanel>
+                                <Button x:Name="RecordButton" Content="开始录制" Click="RecordClick" />
+                                <Button x:Name="SaveCaseButton" Content="保存用例…" Click="SaveCaseClick" />
+                                <Button x:Name="LoadCaseButton" Content="打开用例…" Click="LoadCaseClick" />
+                                <Button x:Name="ReplayButton" Content="回放用例" Click="ReplayClick" />
+                            </WrapPanel>
+                            <TextBlock x:Name="CaseStatus" Text="尚未载入用例" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+                <TabItem Header="设置">
+                    <ScrollViewer x:Name="SettingsPanel" VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="14">
+                            <DockPanel LastChildFill="True" Margin="0,0,0,12">
+                                <ComboBox x:Name="ModePicker" Width="110" DockPanel.Dock="Right"
+                                          AutomationProperties.Name="轮盘方向数" SelectionChanged="ModeChanged">
+                                    <ComboBoxItem Content="4 方向" />
+                                    <ComboBoxItem Content="8 方向" />
+                                </ComboBox>
+                                <TextBlock Text="轮盘方向数" VerticalAlignment="Center" />
+                            </DockPanel>
+                            <ItemsControl x:Name="BindingRows">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,0,0,8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="58" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="134" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding DirectionLabel}" VerticalAlignment="Center" />
+                                            <TextBox Grid.Column="1" Text="{Binding DisplayName, Mode=OneWay}" Margin="0,0,8,0"
+                                                     AutomationProperties.Name="{Binding NameFieldLabel}" TextChanged="BindingNameChanged" />
+                                            <Button Grid.Column="2" Content="{Binding ShortcutLabel}" Margin="0" Padding="6,4"
+                                                    HorizontalAlignment="Stretch" Click="RecordShortcutClick"
+                                                    LostKeyboardFocus="ShortcutFocusLost"
+                                                    ToolTip="录制快捷键"
+                                                    AutomationProperties.Name="{Binding ShortcutFieldLabel}" />
+                                            <Button Grid.Column="3" Content="编辑…" Click="TypeShortcutClick" Margin="4,0,0,0" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <WrapPanel Margin="0,8,0,0">
+                                <Button x:Name="SaveProfileButton" Content="保存配置…" Click="SaveProfileClick" />
+                                <Button Content="加载配置…" Click="LoadProfileClick" />
+                                <Button Content="恢复默认" Click="RestoreDefaultsClick" />
+                            </WrapPanel>
+                            <TextBlock x:Name="SettingsStatus" Text="点击快捷键按钮后按下组合键。Esc 取消录制。" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+                <TabItem Header="调试">
+                    <Grid Margin="14">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock x:Name="InputText" Text="虚拟事件：—" TextWrapping="Wrap" />
+                            <TextBlock x:Name="DirectionText" Text="识别方向：—" />
+                            <TextBlock x:Name="DistanceText" Text="移动距离：—" />
+                            <TextBlock x:Name="StateText" Text="状态机：Idle" />
+                            <TextBlock x:Name="MatchText" Text="匹配命令：—" TextWrapping="Wrap" />
+                            <TextBlock x:Name="DebugResultText" Text="执行结果：—" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ListBox Grid.Row="1" x:Name="TraceLog" FontFamily="Consolas, Microsoft YaHei UI"
+                                 AutomationProperties.Name="最近 80 条虚拟事件" ScrollViewer.HorizontalScrollBarVisibility="Auto" />
+                    </Grid>
+                </TabItem>
+                <TabItem Header="虚拟应用">
+                  <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="14">
+                        <TextBlock Text="虚拟应用" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10" />
+                        <ComboBox x:Name="VirtualAppPicker" DisplayMemberPath="DisplayName"
+                                  AutomationProperties.Name="选择虚拟应用" SelectionChanged="VirtualApplicationChanged" />
+                        <TextBlock Text="通用方案" Margin="0,10,0,4" />
+                        <ComboBox x:Name="VirtualGlobalProfilePicker" DisplayMemberPath="Name"
+                                  AutomationProperties.Name="模拟通用方案" SelectionChanged="VirtualGlobalProfileChanged" />
+                        <TextBlock Text="应用专属方案" Margin="0,10,0,4" />
+                        <ComboBox x:Name="VirtualAppProfilePicker" DisplayMemberPath="Name"
+                                  AutomationProperties.Name="模拟应用专属方案" SelectionChanged="VirtualAppProfileChanged" />
+                        <Button x:Name="ReloadVirtualProfiles" Content="重新加载已保存方案" Click="ReloadVirtualProfilesClick" Margin="0,8,0,0" />
+                        <TextBlock x:Name="VirtualProfileStatus" TextWrapping="Wrap" Margin="0,6,0,0" />
+                        <TextBlock x:Name="VirtualAppStatus" FontSize="17" FontWeight="SemiBold" Margin="0,14,0,0" />
+                        <WrapPanel Margin="0,12,0,0">
+                            <Button x:Name="VirtualEnable" Content="启用侧键" Click="EnableVirtualApplication" />
+                            <Button x:Name="VirtualRevoke" Content="停用侧键" Click="RevokeVirtualApplication" />
+                            <Button x:Name="VirtualPause" Content="紧急暂停" Click="ToggleVirtualPause" />
+                        </WrapPanel>
+                        <WrapPanel>
+                            <ComboBox x:Name="VirtualDirectionPicker" DisplayMemberPath="Name"
+                                      AutomationProperties.Name="模拟笔势方向" MinWidth="88" />
+                            <Button x:Name="VirtualStartInput" Content="模拟按下 / 松开" Click="StartVirtualInput" />
+                            <Button Content="模拟异常输入" Click="InvalidVirtualInput" />
+                        </WrapPanel>
+                        <TextBlock x:Name="VirtualInputResult" TextWrapping="Wrap" />
+                        <TextBlock Text="模拟选用和授权仅在 Lab 内存生效。左侧轮盘可独立预览。" Margin="0,12,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                  </ScrollViewer>
+                </TabItem>
+                <TabItem x:Name="DockLabTab" Header="悬浮岛">
+                    <StackPanel Margin="14">
+                        <TextBlock Text="虚拟前台应用" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10" />
+                        <ComboBox x:Name="DockLabApp" DisplayMemberPath="DisplayName"
+                                  AutomationProperties.Name="悬浮岛虚拟前台应用" SelectionChanged="DockLabAppChanged" />
+                        <WrapPanel Margin="0,10,0,4">
+                            <Button x:Name="DockLabVisibility" Content="显示悬浮岛" Click="ToggleLabDock" />
+                            <Button Content="恢复默认位置" Click="ResetLabDockPosition" />
+                            <Button x:Name="DockLabPreview" Content="预览向上手势" Click="PreviewLabDockGesture" />
+                        </WrapPanel>
+                        <TextBlock x:Name="DockLabStatus" TextWrapping="Wrap" />
+                        <TextBlock x:Name="DockLabResult" TextWrapping="Wrap" Margin="0,5,0,0" />
+                    </StackPanel>
+                </TabItem>
+            </TabControl>
+        </Grid>
+    </Grid>
+</Window>

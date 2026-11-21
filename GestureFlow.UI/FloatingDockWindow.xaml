@@ -1,0 +1,102 @@
+<Window x:Class="GestureFlow.UI.FloatingDockWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:ui="clr-namespace:GestureFlow.UI"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="GestureFlow 悬浮岛" Width="290" UseLayoutRounding="True" SizeToContent="Height"
+        WindowStyle="None" ResizeMode="NoResize" AllowsTransparency="True" Background="Transparent"
+        ShowInTaskbar="False" ShowActivated="False" Focusable="False"
+        MouseEnter="DockMouseEnter" MouseLeave="DockMouseLeave">
+    <Window.Resources>
+        <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/GestureFlow.UI;component/Appearance.xaml"/></ResourceDictionary.MergedDictionaries>
+        <Style x:Key="DockButton" TargetType="Button" BasedOn="{StaticResource QuietButton}">
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Padding" Value="9,5" />
+        </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Border x:Name="DockCard" Margin="11" CornerRadius="24" Padding="10,5"
+
+            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+        <Border.Style>
+            <Style TargetType="Border">
+                <Setter Property="Background" Value="{StaticResource Paper}"/>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource LightText}}" Value="True">
+                        <Setter Property="Background" Value="{StaticResource Graphite}"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
+        <Border.Effect>
+            <DropShadowEffect Color="#181818" ShadowDepth="2" BlurRadius="8" Opacity="0.16" />
+        </Border.Effect>
+        <StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="26" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Border x:Name="DragGrip" Background="Transparent" Cursor="SizeAll" ToolTip="拖动悬浮岛"
+                        AutomationProperties.Name="悬浮岛拖动区域" PreviewMouseLeftButtonDown="BeginDrag"
+                        PreviewMouseLeftButtonUp="EndDrag">
+                    <TextBlock Text="&#xE76F;" FontFamily="Segoe Fluent Icons" FontSize="14"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                </Border>
+                <Button x:Name="ExpandButton" Grid.Column="1" Style="{StaticResource DockButton}"
+                        HorizontalContentAlignment="Stretch" Background="Transparent" BorderThickness="0"
+                        Click="ToggleExpanded" AutomationProperties.Name="展开或收起悬浮岛">
+                    <DockPanel>
+                        <TextBlock x:Name="ExpandGlyph" DockPanel.Dock="Right" Text="&#xE70D;" Margin="8,0,0,0"
+                                   FontFamily="Segoe Fluent Icons" VerticalAlignment="Center" />
+                        <TextBlock x:Name="CompactProfile" Text="{Binding ProfileLabel}" FontWeight="SemiBold" Margin="0,2"
+                                       TextTrimming="CharacterEllipsis" ToolTip="{Binding ProfileLabel}" />
+                    </DockPanel>
+                </Button>
+            </Grid>
+            <StackPanel x:Name="ExpandedPanel" ui:Motion.Entrance="DockMotion" Visibility="Collapsed" Margin="5,8,5,5">
+                <TextBlock Text="{Binding Application}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                           ToolTip="{Binding Application}" />
+                <TextBlock FontSize="12" Margin="0,4,0,8" TextWrapping="Wrap" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                    <Run Text="{Binding ModeLabel, Mode=OneWay}" /> · <Run Text="{Binding ProtectionLabel, Mode=OneWay}" />
+                </TextBlock>
+                <ScrollViewer MaxHeight="155" VerticalScrollBarVisibility="Auto" Focusable="False">
+                    <ItemsControl x:Name="DockProfiles" ItemsSource="{Binding Options}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Style="{StaticResource DockButton}" Margin="0,0,3,4"
+                                        HorizontalContentAlignment="Stretch" Click="ChooseProfile"
+                                        AutomationProperties.Name="{Binding Label}" ToolTip="{Binding Label}">
+                                    <DockPanel>
+                                        <TextBlock DockPanel.Dock="Right" Text="&#xE73E;" FontFamily="Segoe Fluent Icons" Margin="8,0,0,0">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Selected}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                        <TextBlock Text="{Binding Label}" TextTrimming="CharacterEllipsis" />
+                                    </DockPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+                <WrapPanel Margin="0,7,0,0">
+                    <Button x:Name="DockPause" Content="{Binding PauseLabel}" IsEnabled="{Binding CanTogglePause}"
+                            Style="{StaticResource DockButton}" Click="PauseClick" Margin="0,0,5,4" />
+                    <Button x:Name="DockSettings" Content="完整设置" Style="{StaticResource DockButton}"
+                            Click="SettingsClick" Margin="0,0,5,4" />
+                    <Button x:Name="DockHide" Content="隐藏" Style="{StaticResource DockButton}" Click="HideClick" Margin="0,0,0,4" />
+                </WrapPanel>
+                <TextBlock x:Name="Feedback" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>

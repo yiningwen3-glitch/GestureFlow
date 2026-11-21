@@ -1,0 +1,61 @@
+<Window x:Class="GestureFlow.Desktop.WelcomeWizard"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="clr-namespace:GestureFlow.UI;assembly=GestureFlow.UI"
+        Title="GestureFlow 新手教程" Width="660" Height="535" MinWidth="530" MinHeight="430"
+        Style="{DynamicResource MatteWindow}" WindowStartupLocation="CenterOwner" ShowInTaskbar="False" UseLayoutRounding="True">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/GestureFlow.UI;component/Appearance.xaml"/></ResourceDictionary.MergedDictionaries>
+        <BooleanToVisibilityConverter x:Key="BooleanVisibility" />
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid Margin="26" ui:Motion.Entrance="DialogMotion">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <StackPanel Margin="0,0,0,16">
+            <TextBlock Text="{Binding Progress}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+            <TextBlock x:Name="StepHeading" Text="{Binding Current.Title}" FontSize="28" FontWeight="SemiBold"
+                       Margin="0,5,0,0" TextWrapping="Wrap" AutomationProperties.HeadingLevel="Level1"
+                       AutomationProperties.LiveSetting="Polite" />
+        </StackPanel>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Border Padding="18" CornerRadius="12" BorderThickness="1" VerticalAlignment="Top"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
+                <StackPanel>
+                    <TextBlock Text="{Binding Current.Body}" FontSize="15" LineHeight="25" TextWrapping="Wrap" />
+                    <ComboBox x:Name="TriggerChoice" AutomationProperties.Name="选择鼠标侧键" Margin="0,12,0,0" HorizontalAlignment="Left"
+                              Visibility="{Binding Current.OffersSideButton, Converter={StaticResource BooleanVisibility}}">
+                        <ComboBoxItem Content="鼠标侧键 1" />
+                        <ComboBoxItem Content="鼠标侧键 2" />
+                    </ComboBox>
+                    <StackPanel Visibility="{Binding Current.OffersPractice, Converter={StaticResource BooleanVisibility}}">
+                        <Border x:Name="PracticeSurface" Margin="0,10,0,0" Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                                CornerRadius="8" MouseDown="PracticeDown" MouseMove="PracticeMove" MouseUp="PracticeUp"
+                                LostMouseCapture="PracticeLostCapture">
+                            <ui:RadialWheel x:Name="PracticeWheel" Height="218" IsHitTestVisible="False" ShowShortcuts="False" />
+                        </Border>
+                        <TextBlock x:Name="PracticeStatus" Text="在练习区按住所选侧键开始。" Margin="0,8,0,0"
+                                   TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </ScrollViewer>
+        <StackPanel Grid.Row="2" Margin="0,12,0,0">
+            <WrapPanel HorizontalAlignment="Right">
+                <Button Content="跳过" Click="SkipClick" Padding="12,6" Margin="0,0,8,0" />
+                <Button Content="上一步" Click="BackClick" IsEnabled="{Binding CanGoBack}" Padding="12,6" Margin="0,0,8,0" />
+                <Button Content="下一步" Click="NextClick" IsDefault="{Binding HasNext}" Padding="12,6"
+                        Visibility="{Binding HasNext, Converter={StaticResource BooleanVisibility}}" />
+                <Button Content="开始使用桌面笔势" Click="FinishClick" IsDefault="{Binding IsLast}" Padding="12,6" Margin="0,0,8,0"
+                        Visibility="{Binding IsLast, Converter={StaticResource BooleanVisibility}}" />
+                <Button Content="为应用启用笔势" Click="EnableClick" Padding="12,6"
+                        Visibility="{Binding IsLast, Converter={StaticResource BooleanVisibility}}" />
+            </WrapPanel>
+        </StackPanel>
+    </Grid>
+</Window>

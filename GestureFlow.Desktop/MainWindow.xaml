@@ -1,0 +1,529 @@
+<Window x:Class="GestureFlow.Desktop.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:GestureFlow.Desktop"
+    xmlns:protection="clr-namespace:GestureFlow.Core.Protection;assembly=GestureFlow.Core"
+    xmlns:ui="clr-namespace:GestureFlow.UI;assembly=GestureFlow.UI"
+    Icon="/GestureFlow.UI;component/Assets/GestureFlow.ico"
+    Title="GestureFlow" Width="1200" Height="760" MinWidth="840" MinHeight="550"
+    WindowStartupLocation="CenterScreen" UseLayoutRounding="True"
+    Style="{DynamicResource MatteWindow}">
+    <Window.Resources>
+        <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary Source="/GestureFlow.UI;component/Appearance.xaml" />
+        </ResourceDictionary.MergedDictionaries>
+        <local:WheelDarkThemeConverter x:Key="DarkWheelTheme" />
+        <Style x:Key="Card" TargetType="Border" BasedOn="{StaticResource Section}"/>
+        <Style x:Key="Page" TargetType="FrameworkElement">
+            <Setter Property="ui:Motion.Entrance" Value="PageMotion"/>
+            <Setter Property="Visibility" Value="Collapsed" />
+        </Style>
+        <Style x:Key="HomePage" TargetType="ScrollViewer" BasedOn="{StaticResource Page}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding CurrentPage.Page}" Value="{x:Static local:DesktopPage.Home}">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="ApplicationsPage" TargetType="Grid" BasedOn="{StaticResource Page}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding CurrentPage.Page}" Value="{x:Static local:DesktopPage.Applications}">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="GesturesPage" TargetType="Grid" BasedOn="{StaticResource Page}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding CurrentPage.Page}" Value="{x:Static local:DesktopPage.Gestures}">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="LabPage" TargetType="ScrollViewer" BasedOn="{StaticResource Page}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding CurrentPage.Page}" Value="{x:Static local:DesktopPage.Lab}">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="SettingsPage" TargetType="ScrollViewer" BasedOn="{StaticResource Page}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding CurrentPage.Page}" Value="{x:Static local:DesktopPage.Settings}">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="HelpPage" TargetType="Grid" BasedOn="{StaticResource Page}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding CurrentPage.Page}" Value="{x:Static local:DesktopPage.Help}">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="AboutPage" TargetType="Grid" BasedOn="{StaticResource Page}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding CurrentPage.Page}" Value="{x:Static local:DesktopPage.About}">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="SecondaryText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style x:Key="CardTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="{StaticResource SectionSize}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style x:Key="ActionButton" TargetType="Button" BasedOn="{StaticResource QuietButton}">
+            <Setter Property="Padding" Value="{StaticResource ButtonPadding}" />
+            <Setter Property="Margin" Value="0,0,8,8" />
+        </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="184" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Border Padding="12,20,12,16" BorderThickness="0,0,1,0"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="8,0,0,24">
+                    <Border Width="32" Height="32" CornerRadius="8"
+                            Background="{StaticResource Graphite}">
+                        <ContentPresenter ContentTemplate="{StaticResource BrandMark}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <TextBlock Text="GestureFlow" FontSize="16" FontWeight="SemiBold"
+                               Margin="9,0,0,0" VerticalAlignment="Center" />
+                </StackPanel>
+                <Button DockPanel.Dock="Bottom" Tag="Settings" Click="SecondaryPageClick" HorizontalContentAlignment="Left" Padding="12,9" Background="Transparent" BorderThickness="0">
+                    <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE713;" FontFamily="Segoe Fluent Icons" Width="27"/><TextBlock Text="设置"/></StackPanel>
+                </Button>
+                <ListBox x:Name="Navigation" ItemsSource="{Binding PrimaryPages}" SelectedItem="{Binding CurrentPage}"
+                         AutomationProperties.Name="主导航"
+                         Background="Transparent" BorderThickness="0"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem" BasedOn="{StaticResource QuietRow}">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="AutomationProperties.Name" Value="{Binding Title}" />
+                            <Setter Property="Padding" Value="12,9" />
+                            <Setter Property="Margin" Value="0,0,0,4" />
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Icon}" FontFamily="Segoe Fluent Icons" FontSize="16"
+                                           Width="27" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <Grid Grid.Column="1" Margin="28,25,28,16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <DockPanel Margin="0,0,0,18">
+                <TextBlock Text="{Binding CurrentPage.Title}" FontSize="{StaticResource TitleSize}" FontWeight="SemiBold"
+                           AutomationProperties.HeadingLevel="Level1" />
+            </DockPanel>
+
+            <Grid Grid.Row="1">
+                <ScrollViewer x:Name="HomeContent" Style="{StaticResource HomePage}" VerticalScrollBarVisibility="Auto">
+                    <StackPanel MaxWidth="950" Margin="0,0,8,8">
+                        <Grid Margin="0,20,0,24">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="1.1*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center" Margin="0,0,16,0" AutomationProperties.LiveSetting="Polite">
+                                <TextBlock Style="{StaticResource SecondaryText}" x:Name="HomeTriggerText" Text="笔势触发键" />
+                                <TextBlock Text="{Binding InputState}" FontSize="24" FontWeight="SemiBold"
+                                           TextWrapping="Wrap" Margin="0,5,0,12" />
+                                <WrapPanel>
+                                    <Button Content="{Binding InputAction}" Style="{StaticResource ActionButton}" Click="GlobalInputClick" />
+                                    <Button Content="{Binding PauseAction}" IsEnabled="{Binding CanPause}"
+                                            Style="{StaticResource ActionButton}" Click="PauseClick" />
+                                    <Button Content="试用手势" Style="{StaticResource ActionButton}" Click="OpenInputTestClick" />
+                                </WrapPanel>
+                            </StackPanel>
+                            <ui:RadialWheel x:Name="HomeWheel" Grid.Column="1" Height="264" ShowShortcuts="False" IsHitTestVisible="False"
+                                                AutomationProperties.Name="Windows 桌面动作预览"
+                                                IsDark="{Binding Background, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource DarkWheelTheme}}" />
+                        </Grid>
+                        <Border Style="{StaticResource Card}">
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Content="编辑桌面笔势" Click="DesktopProfilesClick" VerticalAlignment="Center" Padding="12,6"/>
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource CardTitle}" Text="Windows 桌面笔势"/>
+                                    <TextBlock Style="{StaticResource SecondaryText}" Text="按住侧键拖向目标方向，松开执行。" Margin="0,5,8,0"/>
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+                        <Expander Header="当前应用详情" Margin="0,14,0,0">
+                        <Border Style="{StaticResource Card}" Margin="0,6,0,0">
+                            <StackPanel>
+                                <TextBlock x:Name="ForegroundTitle" Style="{StaticResource CardTitle}" Text="最近的其他前台应用" />
+                                <TextBlock Text="{Binding ForegroundSummary}" Style="{StaticResource SecondaryText}" Margin="0,6,0,0" />
+                                <TextBlock x:Name="ForegroundProfileText" Text="当前生效方案 · 无" TextWrapping="Wrap" Margin="0,6,0,0" />
+                                <WrapPanel Margin="0,12,0,0">
+                                    <Button Content="打开应用设置" Click="ForegroundSettingsClick" IsEnabled="{Binding CanOpenForeground}"
+                                            Style="{StaticResource ActionButton}" />
+                                    <Button Content="管理应用方案" Click="ForegroundProfilesClick" IsEnabled="{Binding CanOpenForeground}"
+                                            Style="{StaticResource ActionButton}" />
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+
+                        </Expander>
+
+                    </StackPanel>
+                </ScrollViewer>
+
+                <ScrollViewer x:Name="LabContent" Style="{StaticResource LabPage}" VerticalScrollBarVisibility="Auto">
+                    <Border Style="{StaticResource Card}" VerticalAlignment="Top">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource CardTitle}" Text="GestureFlow Lab" />
+                            <TextBlock Style="{StaticResource SecondaryText}" Margin="0,6,0,12"
+                                       Text="在 Lab 画布上按住左键并拖动以练习方向选择。Lab 使用虚拟输入，系统右键继续由当前应用处理。虚拟应用的启用状态仅在 Lab 内有效。" />
+                            <Button Content="打开 GestureFlow Lab" Click="OpenLabClick"
+                                    Padding="12,6" HorizontalAlignment="Left" />
+                        </StackPanel>
+                    </Border>
+                </ScrollViewer>
+
+                <ScrollViewer x:Name="SettingsContent" Style="{StaticResource SettingsPage}" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <DockPanel Margin="0,8,0,16">
+                            <ComboBox x:Name="DesktopThemePicker" DockPanel.Dock="Right" HorizontalAlignment="Right" MinWidth="116" VerticalAlignment="Center"
+                          ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" DisplayMemberPath="Label"
+                          AutomationProperties.Name="外观主题" />
+                            <TextBlock Text="外观主题" Style="{StaticResource CardTitle}" VerticalAlignment="Center"/>
+                        </DockPanel>
+                        <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource CardTitle}" Text="鼠标侧键" />
+                                <ComboBox x:Name="SideButtonPicker" SelectedValuePath="Tag" SelectionChanged="SideButtonChanged"
+                                          AutomationProperties.Name="笔势触发键" MinWidth="140" HorizontalAlignment="Left" Margin="0,8,0,0">
+                                    <ComboBoxItem Content="鼠标侧键 1" Tag="{x:Static protection:GestureTrigger.MouseX1}" />
+                                    <ComboBoxItem Content="鼠标侧键 2" Tag="{x:Static protection:GestureTrigger.MouseX2}" />
+                                </ComboBox>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}" Margin="0,14,0,0">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource CardTitle}" Text="紧急暂停热键" />
+                                <TextBlock Style="{StaticResource SecondaryText}" Margin="0,6,0,10"
+                                           Text="关闭输入监听后可更改。启用输入监听时，Windows 才会注册此热键。" />
+                                <ComboBox x:Name="PauseHotkeyPicker" MinWidth="155" HorizontalAlignment="Left"
+                                          SelectionChanged="PauseHotkeyChanged" AutomationProperties.Name="紧急暂停热键" />
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card}" Margin="0,14,0,0">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource CardTitle}" Text="关闭窗口时" />
+                                <TextBlock Style="{StaticResource SecondaryText}" Margin="0,6,0,10"
+                                           Text="隐藏到托盘后，已开启的手势继续生效。可从托盘重新打开、暂停或退出。" />
+                                <ComboBox x:Name="CloseBehaviorPicker" MinWidth="160" HorizontalAlignment="Left"
+                                          SelectionChanged="CloseBehaviorChanged" AutomationProperties.Name="关闭窗口时">
+                                    <ComboBoxItem Content="询问如何处理" />
+                                    <ComboBoxItem Content="隐藏到托盘" />
+                                    <ComboBoxItem Content="退出软件" />
+                                </ComboBox>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card}" Margin="0,14,0,0">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource CardTitle}" Text="启动与使用引导" />
+                                <CheckBox x:Name="StartupCheckBox" Content="登录 Windows 时启动 GestureFlow"
+                                          Click="StartupChanged" Margin="0,10,0,0" />
+                                <TextBlock Style="{StaticResource SecondaryText}" Margin="0,6,0,10"
+                                           Text="登录启动会打开主窗口并启用桌面手势。" />
+                                <WrapPanel>
+                                    <Button Content="添加到开始菜单" Click="CreateStartMenuShortcutClick"
+                                            Style="{StaticResource ActionButton}" />
+                                    <Button Content="新手教程" Click="WelcomeGuideClick"
+                                            Style="{StaticResource ActionButton}" />
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card}" Margin="0,14,0,0">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource CardTitle}" Text="轮盘灵敏度" />
+                                <TextBlock Style="{StaticResource SecondaryText}" Margin="0,6,0,10"
+                                           Text="灵敏度越高，激活方向所需的移动距离越短。设置适用于 Desktop 的手势和输入测试窗口。" />
+                                <ComboBox x:Name="SensitivityPicker" MinWidth="180" HorizontalAlignment="Left"
+                                          SelectedValuePath="Tag" SelectionChanged="SensitivityChanged"
+                                          AutomationProperties.Name="轮盘灵敏度">
+                                    <ComboBoxItem Content="高 · 中心半径 57 DIP" Tag="{x:Static local:WheelSensitivity.High}" />
+                                    <ComboBoxItem Content="标准 · 中心半径 69 DIP" Tag="{x:Static local:WheelSensitivity.Standard}" />
+                                    <ComboBoxItem Content="低 · 中心半径 81 DIP" Tag="{x:Static local:WheelSensitivity.Low}" />
+                                </ComboBox>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card}" Margin="0,14,0,0">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource CardTitle}" Text="配置备份与恢复" />
+                                <TextBlock Style="{StaticResource SecondaryText}" Margin="0,6,0,0"
+                                           Text="备份包含当前通用方案、热键、灵敏度、主题和关闭行为。可在配置方案管理中单独导出其他方案。应用授权和开机启动由当前电脑单独管理。" />
+                                <WrapPanel Margin="0,10,0,0">
+                                    <Button Content="备份配置…" Click="BackupSettingsClick" Style="{StaticResource ActionButton}" />
+                                    <Button Content="恢复配置…" Click="RestoreSettingsClick" Style="{StaticResource ActionButton}" />
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+                        <Expander x:Name="DockSettingsExpander" Header="悬浮控制岛" Margin="0,0,0,10">
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <WrapPanel Margin="0,8,0,4">
+                                    <CheckBox x:Name="DockVisibleSetting" Content="显示悬浮岛" Click="FloatingDockSettingsChanged" Margin="0,0,12,4" />
+                                    <CheckBox x:Name="DockTopmostSetting" Content="始终置顶" Click="FloatingDockSettingsChanged" Margin="0,0,12,4" />
+                                    <CheckBox x:Name="DockCollapsedSetting" Content="显示时默认折叠" Click="FloatingDockSettingsChanged" Margin="0,0,12,4" />
+                                    <CheckBox x:Name="DockAutoCollapseSetting" Content="指针离开后自动收起" Click="FloatingDockSettingsChanged" Margin="0,0,12,4" />
+                                </WrapPanel>
+                                <WrapPanel Margin="0,3,0,5">
+                                    <TextBlock Text="不透明度" VerticalAlignment="Center" Margin="0,0,12,0" />
+                                    <ComboBox x:Name="DockOpacitySetting" Width="100" SelectionChanged="FloatingDockOpacityChanged"
+                                              DisplayMemberPath="Label" SelectedValuePath="Value" AutomationProperties.Name="悬浮岛不透明度" />
+                                    <Button x:Name="DockResetPositionButton" Content="恢复默认位置" Click="ResetFloatingDockPosition" Margin="12,0,0,0" />
+                                </WrapPanel>
+                                <TextBlock x:Name="DockSettingsStatus" TextWrapping="Wrap" Style="{StaticResource SecondaryText}"
+                                           AutomationProperties.LiveSetting="Polite" />
+                            </StackPanel>
+                        </Border>
+                        </Expander>
+                        <Expander Header="帮助与工具" Margin="0,14,0,8">
+                            <WrapPanel Margin="0,8,0,0">
+                                <Button Content="用户须知" Click="NoticeClick" Style="{StaticResource ActionButton}" />
+                                <Button Content="使用帮助" Tag="Help" Click="SecondaryPageClick" Style="{StaticResource ActionButton}" />
+                                <Button Content="关于软件" Tag="About" Click="SecondaryPageClick" Style="{StaticResource ActionButton}" />
+                                <Button Content="打开 GestureFlow Lab" Click="OpenLabClick" Style="{StaticResource ActionButton}" />
+                            </WrapPanel>
+                        </Expander>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <Grid Style="{StaticResource GesturesPage}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Border Style="{StaticResource Card}" Margin="0,0,8,12">
+                        <StackPanel>
+                            <TextBlock x:Name="EditingScopeText" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,8" />
+                            <WrapPanel>
+                                <ComboBox x:Name="ProfileScopePicker" MinWidth="185" MaxWidth="290" Margin="0,0,8,8"
+                                          DisplayMemberPath="Name" SelectionChanged="ProfileScopeChanged"
+                                          AutomationProperties.Name="通用或应用专属范围" />
+                            </WrapPanel>
+                            <TextBlock x:Name="SelectedProfileText" TextWrapping="Wrap" Margin="0,0,0,8" />
+                            <Expander Header="更多方案">
+                            <StackPanel Margin="0,8,0,0">
+                                <ComboBox x:Name="ProfilePicker" HorizontalAlignment="Left" MinWidth="185" MaxWidth="290" Margin="0,0,8,8"
+                                          DisplayMemberPath="Name" SelectionChanged="ProfileChanged"
+                                          AutomationProperties.Name="此范围的配置方案" />
+                            <WrapPanel>
+                                <TextBox x:Name="ProfileNameBox" Width="185" Margin="0,0,8,8" AutomationProperties.Name="方案名称" />
+                                <Button Content="新建" Click="CreateProfileClick" Style="{StaticResource ActionButton}" />
+                                <Button x:Name="CopyProfileButton" Content="复制当前方案" Click="CopyProfileClick" Style="{StaticResource ActionButton}" />
+                                <Button x:Name="RenameProfileButton" Content="重命名" Click="RenameProfileClick" Style="{StaticResource ActionButton}" />
+                                <Button x:Name="DeleteProfileButton" Content="删除" Click="DeleteProfileClick" Style="{StaticResource ActionButton}" />
+                                <Button x:Name="EditProfileButton" Content="编辑" Click="EditProfileClick" Style="{StaticResource ActionButton}" />
+                            </WrapPanel>
+                            <WrapPanel>
+                                <Button x:Name="SelectProfileButton" Content="选用" Click="SelectProfileClick" Style="{StaticResource ActionButton}" />
+                                <Button Content="恢复默认选用" Click="ResetProfileSelectionClick" Style="{StaticResource ActionButton}" />
+                                <Button Content="导入…" Click="ImportProfileClick" Style="{StaticResource ActionButton}" />
+                                <Button x:Name="ExportProfileButton" Content="导出…" Click="ExportProfileClick" Style="{StaticResource ActionButton}" />
+                            </WrapPanel>
+                            </StackPanel>
+                            </Expander>
+                            <TextBlock x:Name="ProfileStatus" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"
+                                       Style="{StaticResource SecondaryText}" />
+                        </StackPanel>
+                    </Border>
+                    <local:GestureConfigurationView Grid.Row="1" x:Name="GestureConfiguration"
+                                                    SaveRequested="SaveManagedProfileClick" />
+                </Grid>
+
+                <Grid x:Name="HelpContent" Style="{StaticResource HelpPage}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <ComboBox x:Name="HelpTopicPicker" HorizontalAlignment="Left" MinWidth="220" Margin="0,0,0,12"
+                              ItemsSource="{Binding Information.HelpTopics}" SelectedIndex="0" DisplayMemberPath="Title"
+                              SelectionChanged="HelpTopicChanged" AutomationProperties.Name="离线帮助主题" />
+                    <Border Grid.Row="1" Style="{StaticResource Card}" Padding="0">
+                        <FlowDocumentScrollViewer x:Name="HelpReader" VerticalScrollBarVisibility="Auto"
+                                                  IsToolBarVisible="False" AutomationProperties.Name="离线帮助正文" />
+                    </Border>
+                </Grid>
+
+                <Grid x:Name="AboutContent" Style="{StaticResource AboutPage}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="58" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Width="44" Height="44" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Top"
+                                    Background="{StaticResource Graphite}">
+                                <ContentPresenter ContentTemplate="{StaticResource BrandMark}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="GestureFlow" Style="{StaticResource CardTitle}" FontSize="21" />
+                                <TextBlock Text="{Binding Information.Version, StringFormat='版本 {0}'}"
+                                           Style="{StaticResource SecondaryText}" Margin="0,3,0,8" />
+                                <TextBlock Text="{Binding Information.Developer, StringFormat='开发者　{0}'}" TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding Information.DeveloperContact, StringFormat='联系方式　{0}'}"
+                                           TextWrapping="Wrap" Margin="0,4,0,0" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                    <ComboBox x:Name="AboutTopicPicker" Grid.Row="1" HorizontalAlignment="Left" MinWidth="220" Margin="0,0,0,12"
+                              ItemsSource="{Binding Information.AboutTopics}" SelectedIndex="0" DisplayMemberPath="Title"
+                              SelectionChanged="AboutTopicChanged" AutomationProperties.Name="关于软件文档" />
+                    <Border Grid.Row="2" Style="{StaticResource Card}" Padding="0">
+                        <FlowDocumentScrollViewer x:Name="AboutReader" VerticalScrollBarVisibility="Auto"
+                                                  IsToolBarVisible="False" AutomationProperties.Name="关于软件正文" />
+                    </Border>
+                </Grid>
+
+                <Grid x:Name="ApplicationsContent" Style="{StaticResource ApplicationsPage}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel>
+                        <Expander Header="Windows 桌面与输入设置" Margin="0,0,0,12">
+                            <StackPanel Margin="12,8">
+                                <TextBlock Text="桌面使用通用方案。所选侧键也适用于已启用应用和输入测试窗口。" TextWrapping="Wrap" />
+                                <TextBlock x:Name="AppTriggerText" Margin="0,4,0,4" />
+                                <TextBlock Text="{Binding InputState}" Margin="0,4" />
+                                <WrapPanel>
+                                    <Button Content="桌面笔势配置" Click="DesktopProfilesClick" Style="{StaticResource ActionButton}" />
+                                    <Button Content="{Binding InputAction}" Click="GlobalInputClick" Style="{StaticResource ActionButton}" />
+                                    <Button Content="停用所有应用笔势…" Click="ResetProtectionClick" Style="{StaticResource ActionButton}" />
+                                </WrapPanel>
+                            </StackPanel>
+                        </Expander>
+                    <WrapPanel Margin="0,0,0,6">
+                        <Button x:Name="RefreshButton" Content="刷新应用" Click="RefreshClick" Style="{StaticResource ActionButton}" />
+
+                    </WrapPanel>
+                    </StackPanel>
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.45*" />
+                            <ColumnDefinition Width="14" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border Padding="0,4,0,0">
+                            <DockPanel>
+                                <Grid DockPanel.Dock="Top" Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="110" />
+                                        <ColumnDefinition Width="110" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Margin="0,0,8,0">
+                                        <TextBlock Text="应用名称" Margin="0,0,0,4" />
+                                        <TextBox x:Name="SearchBox" AutomationProperties.Name="按名称搜索" TextChanged="FilterChanged" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                                        <TextBlock Text="启用状态" Margin="0,0,0,4" />
+                                        <ComboBox x:Name="EnabledFilter" AutomationProperties.Name="筛选启用状态" SelectedIndex="0" SelectionChanged="FilterChanged">
+                                            <ComboBoxItem Content="全部状态" />
+                                            <ComboBoxItem Content="已启用" />
+                                            <ComboBoxItem Content="已禁用" />
+                                        </ComboBox>
+                                    </StackPanel>
+                                </Grid>
+                                <DockPanel DockPanel.Dock="Bottom" Margin="4,8,0,0">
+                                    <TextBlock x:Name="CountText" />
+                                </DockPanel>
+                                <ListBox x:Name="ApplicationList" SelectionChanged="ApplicationSelected"
+                                         Background="Transparent" BorderThickness="0" AutomationProperties.Name="真实应用列表" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="ListBoxItem" BasedOn="{StaticResource QuietRow}">
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                            <Setter Property="Padding" Value="8,10" />
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="35" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <Grid Width="25" Height="25" HorizontalAlignment="Left">
+                                                    <TextBlock Text="&#xE71D;" FontFamily="Segoe Fluent Icons" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                    <Image Source="{Binding Icon}" Width="24" Height="24" />
+                                                </Grid>
+                                                <TextBlock Grid.Column="1" Text="{Binding Application.DisplayName}" VerticalAlignment="Center"
+                                                           Margin="0,0,10,0" TextTrimming="CharacterEllipsis" ToolTip="{Binding Application.DisplayName}"/>
+                                                <TextBlock Grid.Column="2" Text="{Binding Status}" VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </DockPanel>
+                        </Border>
+                        <Border Grid.Column="2" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1,0,0,0" Padding="16,4,0,0">
+                            <Grid>
+                                <TextBlock x:Name="EmptyDetails" Text="选择一个应用，查看状态并启用笔势" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                <ScrollViewer x:Name="Details" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                                    <StackPanel>
+                                        <TextBlock x:Name="DetailTitle" FontSize="21" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                        <TextBlock x:Name="DetailProfile" Margin="0,7,0,0" TextWrapping="Wrap" />
+                                        <Expander Header="应用详情" Margin="0,8,0,0"><StackPanel>
+                                        <TextBlock x:Name="DetailIdentity" Margin="0,7,0,0" TextWrapping="Wrap" />
+                                        <TextBlock x:Name="DetailSource" Margin="0,5,0,0" TextWrapping="Wrap" />
+                                        <TextBlock x:Name="DetailPath" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                        <TextBlock x:Name="DetailPackage" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                        </StackPanel></Expander>
+                                        <Separator Margin="0,10,0,8" />
+                                        <TextBlock Text="侧键笔势" FontWeight="SemiBold" FontSize="15" />
+                                        <TextBlock x:Name="AuthorizationStatus" Margin="0,8,0,0" TextWrapping="Wrap" />
+                                        <WrapPanel Margin="0,14,0,0">
+                                            <Button x:Name="EnableButton" Content="启用笔势" Click="EnableClick" Padding="10,6" />
+                                            <Button x:Name="AppProfileButton" Content="自定义" Click="AppProfileClick" Padding="10,6" Margin="8,0,0,0" />
+                                            <Button x:Name="EnableAppInputButton" Content="开启应用内笔势…" Click="EnableAppInputClick"
+                                                    Padding="10,6" Margin="8,0,0,0" Visibility="Collapsed" />
+                                            <Button x:Name="RevokeButton" Content="停用笔势" Click="RevokeClick" Padding="10,6" Margin="8,0,0,0" />
+                                            <Button x:Name="AssociateButton" Content="关联 .exe…" Click="AssociateClick" Padding="10,6" Margin="8,0,0,0" />
+                                        </WrapPanel>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                    <TextBlock Grid.Row="2" x:Name="StatusText" Margin="0,10,0,0" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
+                </Grid>
+            </Grid>
+            <TextBlock Grid.Row="2" Text="{Binding InputMessage}" Style="{StaticResource SecondaryText}"
+                       Margin="0,7,0,0" AutomationProperties.LiveSetting="Polite" />
+        </Grid>
+    </Grid>
+</Window>

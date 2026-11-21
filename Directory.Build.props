@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Version>0.1.0-preview.1</Version>
+    <GestureFlowDeveloper Condition="'$(GestureFlowDeveloper)' == ''">未设置</GestureFlowDeveloper>
+    <GestureFlowDeveloperContact Condition="'$(GestureFlowDeveloperContact)' == ''">未设置</GestureFlowDeveloperContact>
+  </PropertyGroup>
+</Project>

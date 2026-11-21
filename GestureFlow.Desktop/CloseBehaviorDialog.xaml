@@ -1,0 +1,22 @@
+<Window x:Class="GestureFlow.Desktop.CloseBehaviorDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:ui="clr-namespace:GestureFlow.UI;assembly=GestureFlow.UI"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="关闭 GestureFlow" SizeToContent="Height" Width="510" ResizeMode="NoResize"
+        Style="{DynamicResource MatteWindow}" WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries><ResourceDictionary Source="/GestureFlow.UI;component/Appearance.xaml"/></ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <StackPanel Margin="24" ui:Motion.Entrance="DialogMotion">
+        <TextBlock Text="关闭窗口时怎么处理？" FontSize="22" FontWeight="SemiBold" TextWrapping="Wrap" />
+        <TextBlock Margin="0,12,0,18" TextWrapping="Wrap"
+                   Text="隐藏后，GestureFlow 会在后台运行，已开启的手势继续生效。可从托盘重新打开、暂停或退出。选择会保存，可在「设置」中更改。" />
+        <WrapPanel HorizontalAlignment="Right">
+            <Button Content="取消" IsCancel="True" Padding="12,6" Margin="0,0,8,0" />
+            <Button Content="隐藏到托盘" Click="HideClick" Padding="12,6" Margin="0,0,8,0" />
+            <Button Content="退出软件" Click="ExitClick" Padding="12,6" />
+        </WrapPanel>
+    </StackPanel>
+</Window>
